@@ -6,39 +6,39 @@
   <style>
     html, body {
       margin: 0; padding: 0;
-      width: 100vw; height: 100vh;
+      width: 100%; height: 100%;
       overflow: hidden;
       background: #222;
     }
     #container {
       position: relative;
-      width: 100vw; height: 100vh;
+      width: 100%; height: 100%;
       overflow: hidden;
     }
     #before {
       position: absolute; left: 0; top: 0;
-      width: 100vw; height: 100vh;
+      width: 100%; height: 100%;
       object-fit: cover;
       z-index: 1;
     }
     #after-wrap {
       position: absolute; left: 0; top: 0;
-      width: 50vw; height: 100vh;
+      width: 50%; height: 100%;
       overflow: hidden;
       z-index: 2;
       pointer-events: none;
       transition: width 0.2s;
     }
     #after {
-      width: 100vw; height: 100vh;
+      width: 100%; height: 100%;
       object-fit: cover;
       position: absolute; left: 0; top: 0;
       z-index: 2;
     }
     #slider {
       position: absolute;
-      left: 0; bottom: 40px;
-      width: 100vw;
+      left: 0; bottom: 32px;
+      width: 100%;
       z-index: 3;
       pointer-events: all;
       appearance: none;
@@ -74,27 +74,27 @@
     #slider:focus { outline: none; }
     .label {
       position: absolute;
-      top: 24px;
+      top: 18px;
       font-family: sans-serif;
-      font-size: 1.3em;
+      font-size: 1.1em;
       font-weight: bold;
       background: rgba(0,0,0,0.33);
       color: #fff;
-      padding: 4px 18px;
+      padding: 3px 14px;
       border-radius: 8px;
       z-index: 4;
       pointer-events: none;
       user-select: none;
       text-shadow: 0 1px 4px rgba(0,0,0,0.6);
     }
-    .label.left { left: 40px;}
-    .label.right { right: 40px;}
+    .label.left { left: 18px;}
+    .label.right { right: 18px;}
     @media (max-width: 600px) {
       #slider { height: 12px; }
       #slider::-webkit-slider-thumb { width: 24px; height: 24px; margin-top: -10px;}
-      .label { font-size: 1em; top: 10px; padding: 2px 10px; }
-      .label.left { left: 8px;}
-      .label.right { right: 8px;}
+      .label { font-size: 0.9em; top: 6px; padding: 2px 7px; }
+      .label.left { left: 4px;}
+      .label.right { right: 4px;}
     }
   </style>
 </head>
@@ -109,37 +109,37 @@
     <input type="range" min="0" max="100" value="50" id="slider"/>
   </div>
   <script>
-    // Helper to parse URL params
+    // Parse URL params
     function getParam(name, def) {
       const url = new URL(window.location);
       let v = url.searchParams.get(name);
       return (v === null || v === undefined || v === '') ? def : v;
     }
 
-    // Get images and labels from params
+    // Set images and labels
     const beforeImg = getParam('before', '');
     const afterImg = getParam('after', '');
     const labelLeft = getParam('label1', '');
     const labelRight = getParam('label2', '');
 
-    // Set images
     document.getElementById('before').src = beforeImg;
     document.getElementById('after').src = afterImg;
-
-    // Set labels (hide if blank)
     document.getElementById('label-left').textContent = labelLeft;
     document.getElementById('label-left').style.display = labelLeft ? '' : 'none';
     document.getElementById('label-right').textContent = labelRight;
     document.getElementById('label-right').style.display = labelRight ? '' : 'none';
 
-    // Slider logic
+    // Responsive slider logic
     const slider = document.getElementById('slider');
     const afterWrap = document.getElementById('after-wrap');
+    function setAfterWidth(percent) {
+      afterWrap.style.width = percent + '%';
+    }
     slider.addEventListener('input', function() {
-      afterWrap.style.width = (this.value) + 'vw';
+      setAfterWidth(this.value);
     });
     // Initial position
-    afterWrap.style.width = slider.value + 'vw';
+    setAfterWidth(slider.value);
   </script>
 </body>
 </html>
