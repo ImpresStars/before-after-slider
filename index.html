@@ -51,8 +51,8 @@
     }
     .img-after {
       z-index: 2;
-      clip-path: inset(0 50% 0 0); /* Start at 50% */
-      transition: clip-path 0.2s;
+      clip-path: inset(0 50% 0 0); /* Updated by JS */
+      transition: clip-path var(--transition-duration, 0.2s);
     }
     /* Slider bar at the bottom */
     .slider-container {
@@ -67,10 +67,10 @@
     }
     .slider {
       pointer-events: all;
-      width: calc(100% - 40px); /* Responsive with padding */
-      max-width: 600px;
+      width: var(--slider-width, calc(100% - 40px));
+      max-width: var(--slider-max-width, 600px);
       height: 12px;
-      background: #FF5F42;
+      background: var(--slider-color, #FF5F42);
       border-radius: 6px;
       appearance: none;
       outline: none;
@@ -78,44 +78,44 @@
     }
     .slider::-webkit-slider-thumb {
       appearance: none;
-      width: 36px;
-      height: 36px;
-      margin-top: -12px;
+      width: var(--thumb-size, 36px);
+      height: var(--thumb-size, 36px);
+      margin-top: calc(var(--thumb-size, 36px) / -2 + 6px);
       border-radius: 50%;
       background: #fff;
-      border: 4px solid #FF5F42;
+      border: 4px solid var(--slider-color, #FF5F42);
       cursor: pointer;
     }
     .slider::-webkit-slider-runnable-track {
       height: 12px;
-      background: #FF5F42;
+      background: var(--slider-color, #FF5F42);
       border-radius: 6px;
     }
     .slider::-moz-range-thumb {
-      width: 36px;
-      height: 36px;
-      margin-top: -12px;
+      width: var(--thumb-size, 36px);
+      height: var(--thumb-size, 36px);
+      margin-top: calc(var(--thumb-size, 36px) / -2 + 6px);
       border-radius: 50%;
       background: #fff;
-      border: 4px solid #FF5F42;
+      border: 4px solid var(--slider-color, #FF5F42);
       cursor: pointer;
     }
     .slider::-moz-range-track {
       height: 12px;
-      background: #FF5F42;
+      background: var(--slider-color, #FF5F42);
       border-radius: 6px;
     }
     .slider::-ms-thumb {
-      width: 36px;
-      height: 36px;
-      margin-top: -12px;
+      width: var(--thumb-size, 36px);
+      height: var(--thumb-size, 36px);
+      margin-top: calc(var(--thumb-size, 36px) / -2 + 6px);
       border-radius: 50%;
       background: #fff;
-      border: 4px solid #FF5F42;
+      border: 4px solid var(--slider-color, #FF5F42);
       cursor: pointer;
     }
     .slider::-ms-fill-lower, .slider::-ms-fill-upper {
-      background: #FF5F42;
+      background: var(--slider-color, #FF5F42);
       border-radius: 6px;
     }
     .slider:focus {
@@ -126,15 +126,15 @@
       position: absolute;
       top: 24px;
       font: bold 1.4em sans-serif;
-      background: rgba(0,0,0,0.33);
-      color: #fff;
+      background: var(--label-bg, rgba(0,0,0,0.33));
+      color: var(--label-color, #fff);
       padding: 4px 12px;
       border-radius: 6px;
       pointer-events: none;
       user-select: none;
       display: none;
       z-index: 3;
-      transition: opacity 0.2s; /* Smooth reveal/hide */
+      transition: opacity var(--transition-duration, 0.2s);
       opacity: 0;
     }
     .label.visible {
@@ -154,9 +154,9 @@
       .slider::-webkit-slider-thumb,
       .slider::-moz-range-thumb,
       .slider::-ms-thumb {
-        width: 28px;
-        height: 28px;
-        margin-top: -10px;
+        width: var(--thumb-size-mobile, 28px);
+        height: var(--thumb-size-mobile, 28px);
+        margin-top: calc(var(--thumb-size-mobile, 28px) / -2 + 4px);
       }
       .label {
         font-size: 1em;
@@ -190,6 +190,29 @@
       return url.searchParams.get(name) || def;
     }
 
+    // Parse and validate parameters
+    const sliderColor = getParam('sliderColor', 'FF5F42').replace('#', '');
+    const thumbSize = parseInt(getParam('thumbSize', 36), 10);
+    const thumbSizeMobile = parseInt(getParam('thumbSize', 28), 10); // Use same param for simplicity
+    const labelBg = getParam('labelBg', '00000033').replace('#', '');
+    const labelColor = getParam('labelColor', 'ffffff').replace('#', '');
+    const defaultPos = Math.min(Math.max(parseInt(getParam('defaultPos', 50), 10), 0), 100);
+    const labelThresholdMin = Math.min(Math.max(parseInt(getParam('labelThresholdMin', 40), 10), 0), 100);
+    const labelThresholdMax = Math.min(Math.max(parseInt(getParam('labelThresholdMax', 60), 10), 0), 100);
+    const transitionDuration = Math.max(parseFloat(getParam('transitionDuration', 0.2)), 0);
+    const sliderWidth = getParam('sliderWidth', 'calc(100% - 40px)');
+    const sliderMaxWidth = getParam('sliderWidth', '600px'); // Use same param for consistency
+
+    // Apply custom styles
+    document.documentElement.style.setProperty('--slider-color', `#${sliderColor}`);
+    document.documentElement.style.setProperty('--thumb-size', `${thumbSize}px`);
+    document.documentElement.style.setProperty('--thumb-size-mobile', `${thumbSizeMobile}px`);
+    document.documentElement.style.setProperty('--label-bg', `#${labelBg}`);
+    document.documentElement.style.setProperty('--label-color', `#${labelColor}`);
+    document.documentElement.style.setProperty('--transition-duration', `${transitionDuration}s`);
+    document.documentElement.style.setProperty('--slider-width', sliderWidth);
+    document.documentElement.style.setProperty('--slider-max-width', sliderMaxWidth);
+
     // Set images with error handling
     const beforeImg = document.getElementById('before-img');
     const afterImg = document.getElementById('after-img');
@@ -197,11 +220,11 @@
     afterImg.src = getParam('after', '');
     beforeImg.onerror = () => {
       console.warn('Before image failed to load');
-      beforeImg.style.background = '#333'; // Fallback
+      beforeImg.style.background = '#333';
     };
     afterImg.onerror = () => {
       console.warn('After image failed to load');
-      afterImg.style.background = '#333'; // Fallback
+      afterImg.style.background = '#333';
     };
 
     // Show labels if provided
@@ -210,7 +233,6 @@
       if (txt) {
         const el = document.getElementById(id);
         el.textContent = txt;
-        // Don't set display here; handled by updateClipPath
       }
     });
 
@@ -219,16 +241,17 @@
     const after = document.getElementById('after-img');
     const label1 = document.getElementById('label1');
     const label2 = document.getElementById('label2');
+    slider.value = defaultPos; // Set default position
     function updateClipPath() {
       const p = 100 - slider.value;
       after.style.clipPath = `inset(0 ${p}% 0 0)`;
       slider.setAttribute('aria-valuenow', slider.value);
 
       // Show/hide labels based on slider position
-      if (slider.value < 40 && label1.textContent) {
+      if (slider.value < labelThresholdMin && label1.textContent) {
         label1.classList.add('visible');
         label2.classList.remove('visible');
-      } else if (slider.value > 60 && label2.textContent) {
+      } else if (slider.value > labelThresholdMax && label2.textContent) {
         label1.classList.remove('visible');
         label2.classList.add('visible');
       } else {
