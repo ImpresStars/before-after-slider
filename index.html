@@ -72,7 +72,6 @@
       100% { transform: translateY(0) rotate(0);}
     }
     #slider:focus { outline: none; }
-    /* Label styling */
     .label {
       position: absolute;
       top: 24px;
@@ -110,17 +109,28 @@
     <input type="range" min="0" max="100" value="50" id="slider"/>
   </div>
   <script>
-    // --- You can parameterize this as before for github! ---
-    // Example: set your images/labels here, or parse URL params as before
-    const beforeImg = "https://static.wixstatic.com/media/a3ae85_8b3a32a6842e4e0498fc3a496b2538d.jpg";
-    const afterImg = "https://static.wixstatic.com/media/a3ae85_42b2356024e248e9897e9632022e4d3.jpg";
-    const labelLeft = "Before";
-    const labelRight = "After";
+    // Helper to parse URL params
+    function getParam(name, def) {
+      const url = new URL(window.location);
+      let v = url.searchParams.get(name);
+      return (v === null || v === undefined || v === '') ? def : v;
+    }
+
+    // Get images and labels from params
+    const beforeImg = getParam('before', '');
+    const afterImg = getParam('after', '');
+    const labelLeft = getParam('label1', '');
+    const labelRight = getParam('label2', '');
+
+    // Set images
     document.getElementById('before').src = beforeImg;
     document.getElementById('after').src = afterImg;
+
+    // Set labels (hide if blank)
     document.getElementById('label-left').textContent = labelLeft;
+    document.getElementById('label-left').style.display = labelLeft ? '' : 'none';
     document.getElementById('label-right').textContent = labelRight;
-    // --- END hardcoded demo setup ---
+    document.getElementById('label-right').style.display = labelRight ? '' : 'none';
 
     // Slider logic
     const slider = document.getElementById('slider');
