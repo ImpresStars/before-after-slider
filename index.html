@@ -9,6 +9,12 @@
       margin: 0; padding: 0;
       overflow: hidden;
       background: #222;
+      box-sizing: border-box;
+    }
+    ::-webkit-scrollbar { width: 0 !important; height: 0 !important; }
+    body { 
+      /* Forcibly hide scrollbars everywhere */
+      overflow: hidden !important;
     }
     .container {
       position: fixed;
@@ -16,14 +22,20 @@
       height: 100vh;
       top: 0; left: 0;
       overflow: hidden;
+      box-sizing: border-box;
     }
     .img-before, .img-after {
       position: absolute;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
-      /* object-fit: cover; */  /* Remove for classic reveal! */
+      object-fit: cover;
       pointer-events: none;
       user-select: none;
+      margin: 0; padding: 0; border: none;
+      box-sizing: border-box;
+      overflow: hidden;
+      background: #222;
+      display: block;
     }
     .after-wrapper {
       position: absolute;
@@ -31,6 +43,10 @@
       height: 100vh;
       overflow: hidden;
       transition: width 0.2s;
+      margin: 0; padding: 0; border: none;
+      box-sizing: border-box;
+      background: none;
+      display: block;
     }
     .slider-container {
       position: fixed;
@@ -40,6 +56,7 @@
       display: flex;
       justify-content: center;
       pointer-events: none;
+      box-sizing: border-box;
     }
     .slider {
       width: 100vw;
@@ -53,6 +70,7 @@
       box-shadow: 0 2px 12px rgba(0,0,0,0.15);
       pointer-events: all;
       transition: background 0.3s;
+      box-sizing: border-box;
     }
     .slider::-webkit-slider-thumb {
       appearance: none;
@@ -64,6 +82,7 @@
       cursor: pointer;
       animation: wiggle 1.2s infinite;
       transition: border-color 0.2s, box-shadow 0.2s;
+      margin-top: -12px; /* Center thumb on track */
     }
     .slider:focus::-webkit-slider-thumb {
       border-color: #ff3900;
@@ -136,6 +155,7 @@
       pointer-events: none;
       user-select: none;
       text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+      display: none;
     }
     .label.before { left: 40px; }
     .label.after { right: 40px; }
@@ -145,6 +165,7 @@
       .slider::-ms-thumb {
         width: 28px;
         height: 28px;
+        margin-top: -8px;
       }
       .slider {
         height: 8px;
@@ -169,8 +190,8 @@
     <div class="after-wrapper" id="after-wrap" style="width: 50vw;">
       <img src="" id="after-img" class="img-after" />
     </div>
-    <div class="label before" id="label1" style="display: none;">Before</div>
-    <div class="label after" id="label2" style="display: none;">After</div>
+    <div class="label before" id="label1"></div>
+    <div class="label after" id="label2"></div>
   </div>
   <div class="slider-container">
     <input type="range" min="0" max="100" value="50" class="slider" id="slider" />
@@ -184,37 +205,41 @@
     // Set image sources
     document.getElementById('before-img').src = getParam('before', '');
     document.getElementById('after-img').src  = getParam('after', '');
-    // Set labels
+    // Set labels (only show if text is provided)
     const label1 = getParam('label1', '');
     const label2 = getParam('label2', '');
     if (label1) {
-      document.getElementById('label1').innerText = label1;
-      document.getElementById('label1').style.display = '';
+      const l1 = document.getElementById('label1');
+      l1.innerText = label1;
+      l1.style.display = '';
     }
     if (label2) {
-      document.getElementById('label2').innerText = label2;
-      document.getElementById('label2').style.display = '';
+      const l2 = document.getElementById('label2');
+      l2.innerText = label2;
+      l2.style.display = '';
     }
     // Set slider color
     const color = getParam('color', '#FF5F42');
     document.documentElement.style.setProperty('--slider-color', color);
 
-    // True masking: only after-wrap width changes
+    // Mask logic
     const slider = document.getElementById('slider');
     const afterWrap = document.getElementById('after-wrap');
     function setAfterWidth(percent) {
       afterWrap.style.width = percent + 'vw';
     }
     slider.addEventListener('input', function() {
-      setAfterWidth(this.value / 100 * 100);
+      setAfterWidth(this.value);
     });
-    setAfterWidth(slider.value / 100 * 100);
+    setAfterWidth(slider.value);
 
     // Prevent scrollbars
     window.onload = window.onresize = () => {
       document.body.scrollLeft = 0;
       document.body.scrollTop = 0;
       window.scrollTo(0,0);
+      document.documentElement.scrollLeft = 0;
+      document.documentElement.scrollTop = 0;
     };
   </script>
 </body>
