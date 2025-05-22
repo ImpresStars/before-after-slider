@@ -26,8 +26,7 @@
     }
     #after-wrap {
       position: absolute; left: 0; top: 0;
-      height: 100%;
-      width: 50%;
+      width: 50%; height: 100%;
       overflow: hidden;
       z-index: 2;
       pointer-events: none;
@@ -40,34 +39,40 @@
       z-index: 2;
       pointer-events: none;
     }
+
+    /* --- SLIDER OVERRIDES FOR ALL BROWSERS --- */
     #slider {
       position: absolute;
       left: 0; bottom: 32px;
       width: 100%;
       z-index: 3;
-      pointer-events: all;
       background: transparent;
       outline: none;
-      /* Remove default for Firefox */
-      -moz-appearance: none;
-      /* Remove default for WebKit */
+      height: 40px;
+      margin: 0;
+      padding: 0;
+      pointer-events: all;
+      appearance: none;
       -webkit-appearance: none;
-      /* Remove default for Edge/IE */
-      appearance: none;
-      height: 40px; /* Large to help with touch */
+      -moz-appearance: none;
     }
-    /* Remove blue dot in Chrome/Safari */
-    #slider::-webkit-slider-thumb {
-      appearance: none;
-    }
-    /* WebKit Custom Track */
+    /* Remove native track & thumb */
+    #slider::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; }
+    #slider::-webkit-slider-runnable-track { appearance: none; -webkit-appearance: none; }
+    #slider::-ms-fill-lower, #slider::-ms-fill-upper { background: none; }
+    #slider::-ms-thumb { appearance: none; }
+    #slider::-moz-range-thumb { appearance: none; }
+    #slider::-moz-range-track { appearance: none; }
+
+    /* --- OUR CUSTOM TRACK & THUMB --- */
     #slider::-webkit-slider-runnable-track {
       height: 4px;
       background: #FF5F42;
       border-radius: 2px;
+      position: relative;
+      z-index: 3;
     }
     #slider::-webkit-slider-thumb {
-      appearance: none;
       width: 32px; height: 32px;
       border-radius: 50%;
       background: #fff;
@@ -76,15 +81,17 @@
       cursor: pointer;
       box-shadow: 0 4px 18px #FF5F4244;
       animation: wiggle 1.2s infinite;
-      transition: border-color 0.2s;
       position: relative;
       z-index: 4;
     }
-    /* Firefox Custom Track */
+
+    /* Mozilla */
     #slider::-moz-range-track {
       height: 4px;
       background: #FF5F42;
       border-radius: 2px;
+      position: relative;
+      z-index: 3;
     }
     #slider::-moz-range-thumb {
       width: 32px; height: 32px;
@@ -112,11 +119,9 @@
       position: relative;
       z-index: 4;
     }
-    /* Remove outline in Firefox */
+
     #slider:focus { outline: none; }
-    /* Hide outline for Edge/IE */
     #slider::-ms-tooltip { display: none; }
-    /* Keyframes for wiggle */
     @keyframes wiggle {
       0%   { transform: translateY(0); }
       10%  { transform: translateY(-8px) rotate(-8deg); }
@@ -126,6 +131,7 @@
       50%  { transform: translateY(0) rotate(0);}
       100% { transform: translateY(0) rotate(0);}
     }
+
     .label {
       position: absolute;
       top: 18px;
