@@ -1,143 +1,240 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8">
   <title>Before/After Slider</title>
   <style>
-    /* Hide any scrollbars */
-    html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden!important; }
-    html::-webkit-scrollbar, body::-webkit-scrollbar { display:none!important; }
-
+    /* Hide scrollbars and prevent scrolling */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden !important;
+      box-sizing: border-box;
+      overscroll-behavior: none;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE/Edge */
+    }
+    html::-webkit-scrollbar, body::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+    body {
+      position: relative;
+    }
     /* Full-screen container */
     .container {
-      position:fixed; inset:0;
-      overflow:hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden !important;
+      box-sizing: border-box;
+      background: #222;
     }
-
-    /* Both images absolutely fill the container */
+    /* Both images fill the container */
     .img-before, .img-after {
-      position:absolute; top:0; left:0;
-      width:100%; height:100%;
-      object-fit:cover;
-      pointer-events:none; user-select:none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+      user-select: none;
+      z-index: 1;
     }
-
-    /* We no longer need a wrapper—clip-path does it */
     .img-after {
-      /* start fully clipped (invisible) */
-      clip-path: inset(0 100% 0 0);
-      transition: clip-path .2s;
+      z-index: 2;
+      clip-path: inset(0 50% 0 0); /* Start at 50% */
+      transition: clip-path 0.2s;
     }
-
     /* Slider bar at the bottom */
     .slider-container {
-      position:fixed; left:0; bottom:24px;
-      width:100%; display:flex; justify-content:center;
-      pointer-events:none;
+      position: absolute;
+      left: 0;
+      bottom: 24px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 10;
     }
     .slider {
-      pointer-events:all;
-      width:80%; max-width:600px;
-      height:12px;
-      background:#FF5F42; border-radius:6px;
-      appearance:none; outline:none;
-      box-shadow:0 2px 12px rgba(0,0,0,0.15);
+      pointer-events: all;
+      width: calc(100% - 40px); /* Responsive with padding */
+      max-width: 600px;
+      height: 12px;
+      background: #FF5F42;
+      border-radius: 6px;
+      appearance: none;
+      outline: none;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
     }
     .slider::-webkit-slider-thumb {
-      appearance:none;
-      width:36px; height:36px; margin-top:-12px;
-      border-radius:50%; background:#fff;
-      border:4px solid #FF5F42; cursor:pointer;
+      appearance: none;
+      width: 36px;
+      height: 36px;
+      margin-top: -12px;
+      border-radius: 50%;
+      background: #fff;
+      border: 4px solid #FF5F42;
+      cursor: pointer;
     }
     .slider::-webkit-slider-runnable-track {
-      height:12px; background:#FF5F42; border-radius:6px;
+      height: 12px;
+      background: #FF5F42;
+      border-radius: 6px;
     }
     .slider::-moz-range-thumb {
-      width:36px; height:36px; margin-top:-12px;
-      border-radius:50%; background:#fff;
-      border:4px solid #FF5F42; cursor:pointer;
+      width: 36px;
+      height: 36px;
+      margin-top: -12px;
+      border-radius: 50%;
+      background: #fff;
+      border: 4px solid #FF5F42;
+      cursor: pointer;
     }
     .slider::-moz-range-track {
-      height:12px; background:#FF5F42; border-radius:6px;
+      height: 12px;
+      background: #FF5F42;
+      border-radius: 6px;
     }
     .slider::-ms-thumb {
-      width:36px; height:36px; margin-top:-12px;
-      border-radius:50%; background:#fff;
-      border:4px solid #FF5F42; cursor:pointer;
+      width: 36px;
+      height: 36px;
+      margin-top: -12px;
+      border-radius: 50%;
+      background: #fff;
+      border: 4px solid #FF5F42;
+      cursor: pointer;
     }
     .slider::-ms-fill-lower, .slider::-ms-fill-upper {
-      background:#FF5F42; border-radius:6px;
+      background: #FF5F42;
+      border-radius: 6px;
     }
-
-    /* Labels (only shown if you pass them) */
+    .slider:focus {
+      outline: none;
+    }
+    /* Labels */
     .label {
-      position:absolute; top:24px;
-      font:bold 1.4em sans-serif;
-      background:rgba(0,0,0,0.33); color:#fff;
-      padding:4px 12px; border-radius:6px;
-      pointer-events:none; user-select:none;
-      display:none;
+      position: absolute;
+      top: 24px;
+      font: bold 1.4em sans-serif;
+      background: rgba(0,0,0,0.33);
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 6px;
+      pointer-events: none;
+      user-select: none;
+      display: none;
+      z-index: 3;
     }
-    .label.before { left:20px; }
-    .label.after  { right:20px; }
-
-    @media(max-width:500px){
-      .slider { height:8px; }
+    .label.before {
+      left: 20px;
+    }
+    .label.after {
+      right: 20px;
+    }
+    @media (max-width: 500px) {
+      .slider {
+        height: 8px;
+      }
       .slider::-webkit-slider-thumb,
       .slider::-moz-range-thumb,
       .slider::-ms-thumb {
-        width:28px; height:28px; margin-top:-10px;
+        width: 28px;
+        height: 28px;
+        margin-top: -10px;
       }
-      .label { font-size:1em; top:12px; padding:2px 8px;}
-      .label.before { left:8px; }
-      .label.after  { right:8px;}
+      .label {
+        font-size: 1em;
+        top: 12px;
+        padding: 2px 8px;
+      }
+      .label.before {
+        left: 8px;
+      }
+      .label.after {
+        right: 8px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <img id="before-img"  class="img-before" />
-    <img id="after-img"   class="img-after"  />
+    <img id="before-img" class="img-before" alt="Before image">
+    <img id="after-img" class="img-after" alt="After image">
     <div id="label1" class="label before"></div>
     <div id="label2" class="label after"></div>
   </div>
-
   <div class="slider-container">
-    <input id="slider" class="slider"
-           type="range" min="0" max="100" value="50"/>
+    <input id="slider" class="slider" type="range" min="0" max="100" value="50"
+           aria-label="Before/After comparison slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
   </div>
-
   <script>
-    // Helper
-    function getParam(n,d){ let v=new URL(location).searchParams.get(n); return v==null?d:v; }
+    // Helper to get URL parameters
+    function getParam(name, def) {
+      const url = new URL(window.location);
+      return url.searchParams.get(name) || def;
+    }
 
-    // Set images
-    document.getElementById('before-img').src = getParam('before','');
-    document.getElementById('after-img') .src = getParam('after','');
+    // Set images with error handling
+    const beforeImg = document.getElementById('before-img');
+    const afterImg = document.getElementById('after-img');
+    beforeImg.src = getParam('before', '');
+    afterImg.src = getParam('after', '');
+    beforeImg.onerror = () => {
+      console.warn('Before image failed to load');
+      beforeImg.style.background = '#333'; // Fallback
+    };
+    afterImg.onerror = () => {
+      console.warn('After image failed to load');
+      afterImg.style.background = '#333'; // Fallback
+    };
 
     // Show labels if provided
-    ;['label1','label2'].forEach(id=>{
-      let txt = getParam(id,'');
-      if(txt){
-        let el = document.getElementById(id);
+    ['label1', 'label2'].forEach(id => {
+      const txt = getParam(id, '');
+      if (txt) {
+        const el = document.getElementById(id);
         el.textContent = txt;
-        el.style.display = '';
+        el.style.display = 'block';
       }
     });
 
     // Slider → clip-path
-    const slider = document.getElementById('slider'),
-          after   = document.getElementById('after-img');
-    slider.oninput = ()=>{
-      // inset(top right% bottom left)
-      let p = 100 - slider.value;
+    const slider = document.getElementById('slider');
+    const after = document.getElementById('after-img');
+    function updateClipPath() {
+      const p = 100 - slider.value;
       after.style.clipPath = `inset(0 ${p}% 0 0)`;
-    };
-    // initialize
-    slider.oninput();
+      slider.setAttribute('aria-valuenow', slider.value);
+    }
+    slider.addEventListener('input', updateClipPath);
+    // Initialize
+    updateClipPath();
 
     // Lock scrolling
-    window.onload = window.onresize = ()=>window.scrollTo(0,0);
+    function lockScroll() {
+      document.body.scrollLeft = 0;
+      document.body.scrollTop = 0;
+      document.documentElement.scrollLeft = 0;
+      document.documentElement.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+    window.addEventListener('load', lockScroll);
+    window.addEventListener('resize', lockScroll);
+    document.addEventListener('touchmove', (e) => {
+      if (e.target !== slider) {
+        e.preventDefault();
+      }
+    }, { passive: false });
   </script>
 </body>
 </html>
