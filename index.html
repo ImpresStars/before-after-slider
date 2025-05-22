@@ -134,6 +134,12 @@
       user-select: none;
       display: none;
       z-index: 3;
+      transition: opacity 0.2s; /* Smooth reveal/hide */
+      opacity: 0;
+    }
+    .label.visible {
+      display: block;
+      opacity: 1;
     }
     .label.before {
       left: 20px;
@@ -204,17 +210,31 @@
       if (txt) {
         const el = document.getElementById(id);
         el.textContent = txt;
-        el.style.display = 'block';
+        // Don't set display here; handled by updateClipPath
       }
     });
 
-    // Slider → clip-path
+    // Slider → clip-path and label visibility
     const slider = document.getElementById('slider');
     const after = document.getElementById('after-img');
+    const label1 = document.getElementById('label1');
+    const label2 = document.getElementById('label2');
     function updateClipPath() {
       const p = 100 - slider.value;
       after.style.clipPath = `inset(0 ${p}% 0 0)`;
       slider.setAttribute('aria-valuenow', slider.value);
+
+      // Show/hide labels based on slider position
+      if (slider.value < 40 && label1.textContent) {
+        label1.classList.add('visible');
+        label2.classList.remove('visible');
+      } else if (slider.value > 60 && label2.textContent) {
+        label1.classList.remove('visible');
+        label2.classList.add('visible');
+      } else {
+        label1.classList.remove('visible');
+        label2.classList.remove('visible');
+      }
     }
     slider.addEventListener('input', updateClipPath);
     // Initialize
