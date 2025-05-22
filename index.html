@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Before/After Slider</title>
+  <style id="dynamic-style"></style>
   <style>
     html, body {
       margin: 0; padding: 0;
@@ -42,34 +43,8 @@
       z-index: 3;
       pointer-events: all;
       appearance: none;
-      height: 16px;
       background: transparent;
       outline: none;
-    }
-    #slider::-webkit-slider-runnable-track {
-      height: 4px;
-      background: #FF5F42;
-      border-radius: 2px;
-    }
-    #slider::-webkit-slider-thumb {
-      appearance: none;
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      background: #fff;
-      border: 4px solid #FF5F42;
-      margin-top: -14px;
-      cursor: pointer;
-      box-shadow: 0 4px 18px #FF5F4244;
-      animation: wiggle 1.2s infinite;
-    }
-    @keyframes wiggle {
-      0%   { transform: translateY(0); }
-      10%  { transform: translateY(-8px) rotate(-8deg); }
-      20%  { transform: translateY(8px) rotate(8deg); }
-      30%  { transform: translateY(-8px) rotate(-5deg);}
-      40%  { transform: translateY(8px) rotate(5deg);}
-      50%  { transform: translateY(0) rotate(0);}
-      100% { transform: translateY(0) rotate(0);}
     }
     #slider:focus { outline: none; }
     .label {
@@ -91,7 +66,6 @@
     .label.right { right: 18px;}
     @media (max-width: 600px) {
       #slider { height: 12px; }
-      #slider::-webkit-slider-thumb { width: 24px; height: 24px; margin-top: -10px;}
       .label { font-size: 0.9em; top: 6px; padding: 2px 7px; }
       .label.left { left: 4px;}
       .label.right { right: 4px;}
@@ -109,25 +83,113 @@
     <input type="range" min="0" max="100" value="50" id="slider"/>
   </div>
   <script>
-    // Parse URL params
     function getParam(name, def) {
       const url = new URL(window.location);
       let v = url.searchParams.get(name);
-      return (v === null || v === undefined || v === '') ? def : v;
+      if (v === null || v === undefined || v === '') return def;
+      if (typeof def === 'boolean') return v === 'true';
+      if (!isNaN(def) && def !== '') return Number(v);
+      return v;
     }
 
-    // Set images and labels
+    // Parse all parameters
     const beforeImg = getParam('before', '');
     const afterImg = getParam('after', '');
     const labelLeft = getParam('label1', '');
     const labelRight = getParam('label2', '');
+    const color  = getParam('color', '#FF5F42');
+    const fit    = getParam('fit', 'cover');
+    const align  = getParam('align', 'center');
+    const zoom   = parseFloat(getParam('zoom', '1'));
+    const wiggleLength = parseFloat(getParam('wiggleLength', '1.2'));
+    const wiggleDist   = parseInt(getParam('wiggleDist', '8'));
+    const sliderSize   = parseInt(getParam('sliderSize', '16'));
+    const thumbSize    = parseInt(getParam('thumbSize', '40'));
+    const fullWidth    = getParam('fullWidth', 'true') === 'true';
+    const fullHeight   = getParam('fullHeight', 'true') === 'true';
 
+    // Set images and labels
     document.getElementById('before').src = beforeImg;
     document.getElementById('after').src = afterImg;
     document.getElementById('label-left').textContent = labelLeft;
     document.getElementById('label-left').style.display = labelLeft ? '' : 'none';
     document.getElementById('label-right').textContent = labelRight;
     document.getElementById('label-right').style.display = labelRight ? '' : 'none';
+
+    // Image object-fit and position
+    let alignX = '50%', alignY = '50%';
+    if (align === 'top')    alignY = '0%';
+    if (align === 'bottom') alignY = '100%';
+    if (align === 'left')   alignX = '0%';
+    if (align === 'right')  alignX = '100%';
+    if (align === 'center') alignX = alignY = '50%';
+
+    // Container size
+    let container = document.getElementById('container');
+    if (fullWidth && fullHeight) {
+      container.style.width = '100%';
+      container.style.height = '100%';
+    } else if (fullWidth) {
+      container.style.width = '100%';
+      container.style.height = '';
+    } else if (fullHeight) {
+      container.style.height = '100%';
+      container.style.width = '';
+    }
+
+    // Dynamic style for slider/track/thumb, wiggle, image fit, etc
+    const style = `
+      #before, #after {
+        object-fit: ${fit};
+        object-position: ${alignX} ${alignY};
+        transform: scale(${zoom});
+      }
+      #slider {
+        height: ${sliderSize}px;
+      }
+      #slider::-webkit-slider-runnable-track {
+        height: ${sliderSize/2}px;
+        background: ${color};
+        border-radius: ${sliderSize/4}px;
+      }
+      #slider::-webkit-slider-thumb {
+        width: ${thumbSize}px; height: ${thumbSize}px;
+        border-radius: 50%;
+        background: #fff;
+        border: 4px solid ${color};
+        margin-top: -${Math.round(thumbSize/2 - sliderSize/4)}px;
+        cursor: pointer;
+        box-shadow: 0 4px 18px ${color}44;
+        animation: wiggle ${wiggleLength}s infinite;
+      }
+      @keyframes wiggle {
+        0%   { transform: translateY(0); }
+        10%  { transform: translateY(-${wiggleDist}px) rotate(-8deg); }
+        20%  { transform: translateY(${wiggleDist}px) rotate(8deg); }
+        30%  { transform: translateY(-${wiggleDist}px) rotate(-5deg);}
+        40%  { transform: translateY(${wiggleDist}px) rotate(5deg);}
+        50%  { transform: translateY(0) rotate(0);}
+        100% { transform: translateY(0) rotate(0);}
+      }
+      #slider::-ms-fill-lower, #slider::-ms-fill-upper {
+        background: ${color};
+        border-radius: ${sliderSize/4}px;
+      }
+      #slider::-moz-range-thumb {
+        width: ${thumbSize}px; height: ${thumbSize}px;
+        border-radius: 50%;
+        background: #fff;
+        border: 4px solid ${color};
+        box-shadow: 0 4px 18px ${color}44;
+        animation: wiggle ${wiggleLength}s infinite;
+      }
+      #slider::-moz-range-track {
+        height: ${sliderSize/2}px;
+        background: ${color};
+        border-radius: ${sliderSize/4}px;
+      }
+    `;
+    document.getElementById('dynamic-style').innerHTML = style;
 
     // Responsive slider logic
     const slider = document.getElementById('slider');
@@ -138,7 +200,6 @@
     slider.addEventListener('input', function() {
       setAfterWidth(this.value);
     });
-    // Initial position
     setAfterWidth(slider.value);
   </script>
 </body>
