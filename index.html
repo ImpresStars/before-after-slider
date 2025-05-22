@@ -4,17 +4,17 @@
   <meta charset="UTF-8"/>
   <title>Before/After Slider</title>
   <style>
-    /* 1) Hide ALL scrollbars */
+    /* Hide any scrollbars */
     html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden!important; }
     html::-webkit-scrollbar, body::-webkit-scrollbar { display:none!important; }
 
-    /* 2) Full-screen wrapper */
+    /* Full-screen container */
     .container {
       position:fixed; inset:0;
       overflow:hidden;
     }
 
-    /* 3) Both images absolutely fill the container */
+    /* Both images absolutely fill the container */
     .img-before, .img-after {
       position:absolute; top:0; left:0;
       width:100%; height:100%;
@@ -22,16 +22,14 @@
       pointer-events:none; user-select:none;
     }
 
-    /* 4) Mask wrapper: only its width ever changes (%) */
-    .after-wrapper {
-      position:absolute; top:0; left:0;
-      width:50%;      /* start at 50% */
-      height:100%;
-      overflow:hidden;
-      transition: width .2s;
+    /* We no longer need a wrapper—clip-path does it */
+    .img-after {
+      /* start fully clipped (invisible) */
+      clip-path: inset(0 100% 0 0);
+      transition: clip-path .2s;
     }
 
-    /* 5) Slider bar centered at bottom */
+    /* Slider bar at the bottom */
     .slider-container {
       position:fixed; left:0; bottom:24px;
       width:100%; display:flex; justify-content:center;
@@ -45,7 +43,6 @@
       appearance:none; outline:none;
       box-shadow:0 2px 12px rgba(0,0,0,0.15);
     }
-    /* 6) Thumb perfectly centered over the track */
     .slider::-webkit-slider-thumb {
       appearance:none;
       width:36px; height:36px; margin-top:-12px;
@@ -72,7 +69,7 @@
       background:#FF5F42; border-radius:6px;
     }
 
-    /* 7) Labels (only shown if you pass them in) */
+    /* Labels (only shown if you pass them) */
     .label {
       position:absolute; top:24px;
       font:bold 1.4em sans-serif;
@@ -91,52 +88,56 @@
       .slider::-ms-thumb {
         width:28px; height:28px; margin-top:-10px;
       }
-      .label { font-size:1em; top:12px; padding:2px 8px; }
+      .label { font-size:1em; top:12px; padding:2px 8px;}
       .label.before { left:8px; }
-      .label.after  { right:8px; }
+      .label.after  { right:8px;}
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <img id="before-img" class="img-before" />
-    <div id="after-wrap" class="after-wrapper">
-      <img id="after-img" class="img-after" />
-    </div>
+    <img id="before-img"  class="img-before" />
+    <img id="after-img"   class="img-after"  />
     <div id="label1" class="label before"></div>
     <div id="label2" class="label after"></div>
   </div>
-  <div class="slider-container">
-    <input id="slider" class="slider" type="range" min="0" max="100" value="50"/>
-  </div>
-  <script>
-    function getParam(name, d) {
-      const v = new URL(window.location).searchParams.get(name);
-      return v == null ? d : v;
-    }
 
-    // 1) load images
+  <div class="slider-container">
+    <input id="slider" class="slider"
+           type="range" min="0" max="100" value="50"/>
+  </div>
+
+  <script>
+    // Helper
+    function getParam(n,d){ let v=new URL(location).searchParams.get(n); return v==null?d:v; }
+
+    // Set images
     document.getElementById('before-img').src = getParam('before','');
     document.getElementById('after-img') .src = getParam('after','');
 
-    // 2) show labels if provided
-    ['label1','label2'].forEach(id => {
-      const txt = getParam(id,'');
-      if (txt) {
-        const el = document.getElementById(id);
+    // Show labels if provided
+    ;['label1','label2'].forEach(id=>{
+      let txt = getParam(id,'');
+      if(txt){
+        let el = document.getElementById(id);
         el.textContent = txt;
         el.style.display = '';
       }
     });
 
-    // 3) slider → mask width (%) only
-    const slider = document.getElementById('slider');
-    const mask   = document.getElementById('after-wrap');
-    slider.oninput = () => mask.style.width = slider.value + '%';
-    mask.style.width = slider.value + '%';
+    // Slider → clip-path
+    const slider = document.getElementById('slider'),
+          after   = document.getElementById('after-img');
+    slider.oninput = ()=>{
+      // inset(top right% bottom left)
+      let p = 100 - slider.value;
+      after.style.clipPath = `inset(0 ${p}% 0 0)`;
+    };
+    // initialize
+    slider.oninput();
 
-    // 4) block any scrolling
-    window.onload = window.onresize = () => window.scrollTo(0,0);
+    // Lock scrolling
+    window.onload = window.onresize = ()=>window.scrollTo(0,0);
   </script>
 </body>
 </html>
