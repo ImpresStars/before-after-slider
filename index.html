@@ -7,27 +7,28 @@
     html, body {
       width: 100vw; height: 100vh;
       margin: 0; padding: 0;
-      overflow: hidden;
+      overflow: hidden !important;
       background: #222;
       box-sizing: border-box;
+      overscroll-behavior: none;
+      /* Hide scrollbars in all browsers */
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
-    ::-webkit-scrollbar { width: 0 !important; height: 0 !important; }
-    body { 
-      /* Forcibly hide scrollbars everywhere */
-      overflow: hidden !important;
-    }
+    body::-webkit-scrollbar, html::-webkit-scrollbar { display: none; width: 0 !important; height: 0 !important; }
     .container {
       position: fixed;
-      width: 100vw;
-      height: 100vh;
       top: 0; left: 0;
-      overflow: hidden;
+      width: 100vw; height: 100vh;
+      overflow: hidden !important;
       box-sizing: border-box;
     }
     .img-before, .img-after {
       position: absolute;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
+      max-width: 100vw; max-height: 100vh;
+      min-width: 100vw; min-height: 100vh;
       object-fit: cover;
       pointer-events: none;
       user-select: none;
@@ -41,7 +42,7 @@
       position: absolute;
       top: 0; left: 0;
       height: 100vh;
-      overflow: hidden;
+      overflow: hidden !important;
       transition: width 0.2s;
       margin: 0; padding: 0; border: none;
       box-sizing: border-box;
@@ -57,6 +58,7 @@
       justify-content: center;
       pointer-events: none;
       box-sizing: border-box;
+      overflow: visible !important;
     }
     .slider {
       width: 100vw;
@@ -71,7 +73,9 @@
       pointer-events: all;
       transition: background 0.3s;
       box-sizing: border-box;
+      overflow: visible !important;
     }
+    /* Thumb center: perfectly centered for all browsers */
     .slider::-webkit-slider-thumb {
       appearance: none;
       width: 36px; height: 36px;
@@ -82,21 +86,19 @@
       cursor: pointer;
       animation: wiggle 1.2s infinite;
       transition: border-color 0.2s, box-shadow 0.2s;
-      margin-top: -12px; /* Center thumb on track */
-    }
-    .slider:focus::-webkit-slider-thumb {
-      border-color: #ff3900;
-      box-shadow: 0 0 0 6px rgba(255,95,66,0.12);
+      margin-top: -12px; /* Center thumb on track (36-12)/2 = 12 */
+      vertical-align: middle;
+      position: relative;
+      z-index: 3;
     }
     .slider::-webkit-slider-runnable-track {
       height: 12px;
       background: #FF5F42;
       border-radius: 6px;
+      position: relative;
+      z-index: 2;
     }
-    .slider::-ms-fill-lower, .slider::-ms-fill-upper {
-      background: #FF5F42;
-      border-radius: 6px;
-    }
+    /* For Firefox */
     .slider::-moz-range-thumb {
       width: 36px; height: 36px;
       border-radius: 50%;
@@ -105,17 +107,18 @@
       box-shadow: 0 4px 18px rgba(255,95,66,0.25);
       cursor: pointer;
       animation: wiggle 1.2s infinite;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .slider:focus::-moz-range-thumb {
-      border-color: #ff3900;
-      box-shadow: 0 0 0 6px rgba(255,95,66,0.12);
+      margin-top: -12px;
+      position: relative;
+      z-index: 3;
     }
     .slider::-moz-range-track {
       height: 12px;
       background: #FF5F42;
       border-radius: 6px;
+      position: relative;
+      z-index: 2;
     }
+    /* For Edge/IE */
     .slider::-ms-thumb {
       width: 36px; height: 36px;
       border-radius: 50%;
@@ -124,14 +127,16 @@
       box-shadow: 0 4px 18px rgba(255,95,66,0.25);
       cursor: pointer;
       animation: wiggle 1.2s infinite;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      margin-top: -12px;
+      position: relative;
+      z-index: 3;
     }
-    .slider:focus {
-      outline: none;
+    .slider::-ms-fill-lower, .slider::-ms-fill-upper {
+      background: #FF5F42;
+      border-radius: 6px;
     }
-    .slider::-ms-tooltip {
-      display: none;
-    }
+    .slider:focus { outline: none; }
+    .slider::-ms-tooltip { display: none; }
     @keyframes wiggle {
       0%   { transform: translateY(0); }
       10%  { transform: translateY(-5px) rotate(-8deg); }
@@ -197,15 +202,13 @@
     <input type="range" min="0" max="100" value="50" class="slider" id="slider" />
   </div>
   <script>
-    // Parse URL query params
     function getParam(name, def) {
       const url = new URL(window.location);
       return url.searchParams.get(name) || def;
     }
-    // Set image sources
     document.getElementById('before-img').src = getParam('before', '');
     document.getElementById('after-img').src  = getParam('after', '');
-    // Set labels (only show if text is provided)
+    // Labels only show if provided
     const label1 = getParam('label1', '');
     const label2 = getParam('label2', '');
     if (label1) {
@@ -218,11 +221,6 @@
       l2.innerText = label2;
       l2.style.display = '';
     }
-    // Set slider color
-    const color = getParam('color', '#FF5F42');
-    document.documentElement.style.setProperty('--slider-color', color);
-
-    // Mask logic
     const slider = document.getElementById('slider');
     const afterWrap = document.getElementById('after-wrap');
     function setAfterWidth(percent) {
@@ -233,7 +231,7 @@
     });
     setAfterWidth(slider.value);
 
-    // Prevent scrollbars
+    // Remove scrollbars always, even after resize
     window.onload = window.onresize = () => {
       document.body.scrollLeft = 0;
       document.body.scrollTop = 0;
