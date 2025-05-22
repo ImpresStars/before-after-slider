@@ -15,26 +15,30 @@
       position: relative;
       width: 100%; height: 100%;
       overflow: hidden;
+      user-select: none;
     }
     #before {
       position: absolute; left: 0; top: 0;
       width: 100%; height: 100%;
       object-fit: cover;
       z-index: 1;
+      pointer-events: none;
     }
     #after-wrap {
       position: absolute; left: 0; top: 0;
-      width: 50%; height: 100%;
+      height: 100%;
+      width: 50%;
       overflow: hidden;
       z-index: 2;
       pointer-events: none;
       transition: width 0.2s;
     }
     #after {
+      position: absolute; left: 0; top: 0;
       width: 100%; height: 100%;
       object-fit: cover;
-      position: absolute; left: 0; top: 0;
       z-index: 2;
+      pointer-events: none;
     }
     #slider {
       position: absolute;
@@ -42,11 +46,86 @@
       width: 100%;
       z-index: 3;
       pointer-events: all;
-      appearance: none;
       background: transparent;
       outline: none;
+      /* Remove default for Firefox */
+      -moz-appearance: none;
+      /* Remove default for WebKit */
+      -webkit-appearance: none;
+      /* Remove default for Edge/IE */
+      appearance: none;
+      height: 40px; /* Large to help with touch */
     }
+    /* Remove blue dot in Chrome/Safari */
+    #slider::-webkit-slider-thumb {
+      appearance: none;
+    }
+    /* WebKit Custom Track */
+    #slider::-webkit-slider-runnable-track {
+      height: 4px;
+      background: #FF5F42;
+      border-radius: 2px;
+    }
+    #slider::-webkit-slider-thumb {
+      appearance: none;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: #fff;
+      border: 4px solid #FF5F42;
+      margin-top: -14px;
+      cursor: pointer;
+      box-shadow: 0 4px 18px #FF5F4244;
+      animation: wiggle 1.2s infinite;
+      transition: border-color 0.2s;
+      position: relative;
+      z-index: 4;
+    }
+    /* Firefox Custom Track */
+    #slider::-moz-range-track {
+      height: 4px;
+      background: #FF5F42;
+      border-radius: 2px;
+    }
+    #slider::-moz-range-thumb {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: #fff;
+      border: 4px solid #FF5F42;
+      cursor: pointer;
+      box-shadow: 0 4px 18px #FF5F4244;
+      animation: wiggle 1.2s infinite;
+      position: relative;
+      z-index: 4;
+    }
+    #slider::-ms-fill-lower, #slider::-ms-fill-upper {
+      background: #FF5F42;
+      border-radius: 2px;
+    }
+    #slider::-ms-thumb {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: #fff;
+      border: 4px solid #FF5F42;
+      cursor: pointer;
+      box-shadow: 0 4px 18px #FF5F4244;
+      animation: wiggle 1.2s infinite;
+      position: relative;
+      z-index: 4;
+    }
+    /* Remove outline in Firefox */
     #slider:focus { outline: none; }
+    /* Hide outline for Edge/IE */
+    #slider::-ms-tooltip { display: none; }
+    /* Keyframes for wiggle */
+    @keyframes wiggle {
+      0%   { transform: translateY(0); }
+      10%  { transform: translateY(-8px) rotate(-8deg); }
+      20%  { transform: translateY(8px) rotate(8deg); }
+      30%  { transform: translateY(-8px) rotate(-5deg);}
+      40%  { transform: translateY(8px) rotate(5deg);}
+      50%  { transform: translateY(0) rotate(0);}
+      100% { transform: translateY(0) rotate(0);}
+    }
     .label {
       position: absolute;
       top: 18px;
@@ -57,7 +136,7 @@
       color: #fff;
       padding: 3px 14px;
       border-radius: 8px;
-      z-index: 4;
+      z-index: 10;
       pointer-events: none;
       user-select: none;
       text-shadow: 0 1px 4px rgba(0,0,0,0.6);
@@ -65,7 +144,13 @@
     .label.left { left: 18px;}
     .label.right { right: 18px;}
     @media (max-width: 600px) {
-      #slider { height: 12px; }
+      #slider { height: 32px; }
+      #slider::-webkit-slider-thumb,
+      #slider::-moz-range-thumb,
+      #slider::-ms-thumb {
+        width: 24px; height: 24px;
+        margin-top: -10px;
+      }
       .label { font-size: 0.9em; top: 6px; padding: 2px 7px; }
       .label.left { left: 4px;}
       .label.right { right: 4px;}
@@ -83,6 +168,7 @@
     <input type="range" min="0" max="100" value="50" id="slider"/>
   </div>
   <script>
+    // Helper to parse parameters
     function getParam(name, def) {
       const url = new URL(window.location);
       let v = url.searchParams.get(name);
@@ -92,7 +178,7 @@
       return v;
     }
 
-    // Parse all parameters
+    // Parse params
     const beforeImg = getParam('before', '');
     const afterImg = getParam('after', '');
     const labelLeft = getParam('label1', '');
@@ -116,7 +202,7 @@
     document.getElementById('label-right').textContent = labelRight;
     document.getElementById('label-right').style.display = labelRight ? '' : 'none';
 
-    // Image object-fit and position
+    // Set image fit/align/zoom
     let alignX = '50%', alignY = '50%';
     if (align === 'top')    alignY = '0%';
     if (align === 'bottom') alignY = '100%';
@@ -161,6 +247,9 @@
         cursor: pointer;
         box-shadow: 0 4px 18px ${color}44;
         animation: wiggle ${wiggleLength}s infinite;
+        transition: border-color 0.2s;
+        position: relative;
+        z-index: 4;
       }
       @keyframes wiggle {
         0%   { transform: translateY(0); }
@@ -191,7 +280,7 @@
     `;
     document.getElementById('dynamic-style').innerHTML = style;
 
-    // Responsive slider logic
+    // True before/after logic: only parent (mask), not image, moves
     const slider = document.getElementById('slider');
     const afterWrap = document.getElementById('after-wrap');
     function setAfterWidth(percent) {
