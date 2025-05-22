@@ -1,42 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8">
   <title>Before/After Slider</title>
   <style>
-    /* Hide all scrollbars */
-    html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden!important; }
-    html::-webkit-scrollbar, body::-webkit-scrollbar { display:none!important; }
-
-    /* Full-screen container */
+    /* Full‐screen, no scrollbars */
+    html, body { margin:0; padding:0; width:100vw; height:100vh; overflow:hidden; }
+    /* Container covers viewport */
     .container {
-      position:fixed; inset:0;
-      overflow:hidden;
+      position:fixed; inset:0; overflow:hidden;
     }
-
-    /* Both images fill the container, static */
+    /* Images are static, full‐size */
     .img-before, .img-after {
       position:absolute; top:0; left:0;
-      width:100%; height:100%;
+      width:100vw; height:100vh;
       object-fit:cover;
       pointer-events:none;
       user-select:none;
     }
-
-    /* Mask that reveals only X% of the after image */
+    /* Mask only changes width */
     .after-wrapper {
       position:absolute; top:0; left:0;
-      width:50%;   /* initial split */
-      height:100%;
+      width:50vw; /* initial 50% */
+      height:100vh;
       overflow:hidden;
-      transition:width .2s;
+      transition: width .2s;
     }
-
-    /* Slider track at bottom */
+    /* Slider at bottom, centered */
     .slider-container {
-      position:absolute; left:0; bottom:24px;
-      width:100%;
-      display:flex; justify-content:center;
+      position:fixed; left:0; bottom:32px;
+      width:100vw; display:flex; justify-content:center;
       pointer-events:none;
     }
     .slider {
@@ -52,65 +45,51 @@
     .slider::-webkit-slider-thumb {
       appearance:none;
       width:36px; height:36px;
-      margin-top:-12px; border-radius:50%;
-      background:#fff; border:4px solid #FF5F42;
-      cursor:pointer; box-shadow:0 4px 18px rgba(255,95,66,0.25);
-      animation:wiggle 1.2s infinite;
+      margin-top:-12px; /* (36−12)/2 */
+      border-radius:50%; background:#fff;
+      border:4px solid #FF5F42;
+      cursor:pointer;
     }
     .slider::-webkit-slider-runnable-track {
       height:12px; background:#FF5F42; border-radius:6px;
     }
     .slider::-moz-range-thumb {
-      width:36px; height:36px; margin-top:-12px; border-radius:50%;
-      background:#fff; border:4px solid #FF5F42;
-      box-shadow:0 4px 18px rgba(255,95,66,0.25);
-      animation:wiggle 1.2s infinite;
+      width:36px; height:36px; margin-top:-12px;
+      border-radius:50%; background:#fff;
+      border:4px solid #FF5F42; cursor:pointer;
     }
     .slider::-moz-range-track {
       height:12px; background:#FF5F42; border-radius:6px;
     }
     .slider::-ms-thumb {
-      width:36px; height:36px; margin-top:-12px; border-radius:50%;
-      background:#fff; border:4px solid #FF5F42;
-      box-shadow:0 4px 18px rgba(255,95,66,0.25);
-      animation:wiggle 1.2s infinite;
+      width:36px; height:36px; margin-top:-12px;
+      border-radius:50%; background:#fff;
+      border:4px solid #FF5F42; cursor:pointer;
     }
     .slider::-ms-fill-lower, .slider::-ms-fill-upper {
       background:#FF5F42; border-radius:6px;
     }
-    .slider:focus { outline:none; }
-    .slider::-ms-tooltip { display:none; }
-
-    @keyframes wiggle {
-      0%,50%,100% {transform:translateY(0) rotate(0)}
-      10% {transform:translateY(-5px) rotate(-8deg)}
-      20% {transform:translateY(5px)  rotate(8deg)}
-      30% {transform:translateY(-5px) rotate(-5deg)}
-      40% {transform:translateY(5px)  rotate(5deg)}
-    }
-
     /* Labels */
     .label {
-      position:absolute; top:24px;
-      font:bold 1.4em sans-serif;
+      position:absolute; top:32px;
+      font:bold 1.6em sans-serif;
       background:rgba(0,0,0,0.33);
-      color:#fff; padding:4px 12px;
-      border-radius:6px;
+      color:#fff; padding:4px 18px;
+      border-radius:8px; pointer-events:none;
       user-select:none; display:none;
     }
-    .label.before { left:20px; }
-    .label.after  { right:20px; }
-
-    @media(max-width:500px){
-      .slider{height:8px}
+    .label.before { left:40px; }
+    .label.after  { right:40px; }
+    @media (max-width:500px) {
+      .slider { height:8px; }
       .slider::-webkit-slider-thumb,
       .slider::-moz-range-thumb,
       .slider::-ms-thumb {
         width:28px; height:28px; margin-top:-8px;
       }
-      .label{font-size:1em;top:12px;padding:2px 8px}
-      .label.before{left:8px}
-      .label.after{right:8px}
+      .label { font-size:1.1em; top:8px; padding:2px 10px; }
+      .label.before { left:8px; }
+      .label.after  { right:8px; }
     }
   </style>
 </head>
@@ -124,29 +103,32 @@
     <div id="label2" class="label after"></div>
   </div>
   <div class="slider-container">
-    <input id="slider" class="slider" type="range" min="0" max="100" value="50"/>
+    <input id="slider" class="slider" type="range" min="0" max="100" value="50" />
   </div>
   <script>
-    function getParam(n,d){let v=new URL(window.location).searchParams.get(n);return v==null?d:v}
+    // Helper to read URL params
+    function getParam(n,d){let v=new URL(location).searchParams.get(n);return v==null?d:v;}
 
-    // set images
-    document.getElementById('before-img').src = getParam('before','');
-    document.getElementById('after-img').src  = getParam('after','');
+    // Set images
+    before=document.getElementById('before-img');
+    after= document.getElementById('after-img');
+    before.src=getParam('before','');
+    after .src=getParam('after','');
 
-    // set labels
+    // Set labels
     ['label1','label2'].forEach(id=>{
-      let t=getParam(id,'');
-      if(t){let e=document.getElementById(id);e.textContent=t;e.style.display=''}
+      t=getParam(id,'');
+      if(t){let e=document.getElementById(id); e.textContent=t; e.style.display='';}
     });
 
-    // slider → mask
-    const s=document.getElementById('slider'),
-          m=document.getElementById('after-wrap');
-    s.oninput=()=>m.style.width=s.value+'%';
-    m.style.width=s.value+'%';
+    // Slider → mask width (vw)
+    s=document.getElementById('slider');
+    m=document.getElementById('after-wrap');
+    s.oninput= ()=> m.style.width = s.value + 'vw';
+    m.style.width = s.value + 'vw';
 
-    // lock scroll
-    window.onload=window.onresize=_=>window.scrollTo(0,0);
+    // Lock scrolling
+    window.onload=window.onresize=()=>window.scrollTo(0,0);
   </script>
 </body>
 </html>
