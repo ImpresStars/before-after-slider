@@ -4,17 +4,17 @@
   <meta charset="UTF-8"/>
   <title>Before/After Slider</title>
   <style>
-    /* Hide all scrollbars */
+    /* 1) Hide ALL scrollbars */
     html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden!important; }
     html::-webkit-scrollbar, body::-webkit-scrollbar { display:none!important; }
 
-    /* Full-container */
+    /* 2) Full-screen wrapper */
     .container {
       position:fixed; inset:0;
       overflow:hidden;
     }
 
-    /* Both images static, filling the container */
+    /* 3) Both images absolutely fill the container */
     .img-before, .img-after {
       position:absolute; top:0; left:0;
       width:100%; height:100%;
@@ -22,16 +22,16 @@
       pointer-events:none; user-select:none;
     }
 
-    /* Mask that reveals by percent */
+    /* 4) Mask wrapper: only its width ever changes (%) */
     .after-wrapper {
       position:absolute; top:0; left:0;
-      width:50%;    /* initial 50% of container */
+      width:50%;      /* start at 50% */
       height:100%;
       overflow:hidden;
       transition: width .2s;
     }
 
-    /* Slider bar */
+    /* 5) Slider bar centered at bottom */
     .slider-container {
       position:fixed; left:0; bottom:24px;
       width:100%; display:flex; justify-content:center;
@@ -45,6 +45,7 @@
       appearance:none; outline:none;
       box-shadow:0 2px 12px rgba(0,0,0,0.15);
     }
+    /* 6) Thumb perfectly centered over the track */
     .slider::-webkit-slider-thumb {
       appearance:none;
       width:36px; height:36px; margin-top:-12px;
@@ -71,16 +72,7 @@
       background:#FF5F42; border-radius:6px;
     }
 
-    @media(max-width:500px){
-      .slider { height:8px; }
-      .slider::-webkit-slider-thumb,
-      .slider::-moz-range-thumb,
-      .slider::-ms-thumb {
-        width:28px; height:28px; margin-top:-10px;
-      }
-    }
-
-    /* Labels */
+    /* 7) Labels (only shown if you pass them in) */
     .label {
       position:absolute; top:24px;
       font:bold 1.4em sans-serif;
@@ -91,6 +83,18 @@
     }
     .label.before { left:20px; }
     .label.after  { right:20px; }
+
+    @media(max-width:500px){
+      .slider { height:8px; }
+      .slider::-webkit-slider-thumb,
+      .slider::-moz-range-thumb,
+      .slider::-ms-thumb {
+        width:28px; height:28px; margin-top:-10px;
+      }
+      .label { font-size:1em; top:12px; padding:2px 8px; }
+      .label.before { left:8px; }
+      .label.after  { right:8px; }
+    }
   </style>
 </head>
 <body>
@@ -106,26 +110,33 @@
     <input id="slider" class="slider" type="range" min="0" max="100" value="50"/>
   </div>
   <script>
-    function getParam(n,d){let v=new URL(location).searchParams.get(n);return v==null?d:v;}
-    // set images
+    function getParam(name, d) {
+      const v = new URL(window.location).searchParams.get(name);
+      return v == null ? d : v;
+    }
+
+    // 1) load images
     document.getElementById('before-img').src = getParam('before','');
     document.getElementById('after-img') .src = getParam('after','');
 
-    // set labels
-    ['label1','label2'].forEach(id=>{
-      let t=getParam(id,'');
-      if(t){ let e=document.getElementById(id);
-        e.textContent=t; e.style.display=''; }
+    // 2) show labels if provided
+    ['label1','label2'].forEach(id => {
+      const txt = getParam(id,'');
+      if (txt) {
+        const el = document.getElementById(id);
+        el.textContent = txt;
+        el.style.display = '';
+      }
     });
 
-    // slider→mask
-    const s=document.getElementById('slider'),
-          m=document.getElementById('after-wrap');
-    s.oninput = ()=> m.style.width = s.value + '%';
-    m.style.width = s.value + '%';
+    // 3) slider → mask width (%) only
+    const slider = document.getElementById('slider');
+    const mask   = document.getElementById('after-wrap');
+    slider.oninput = () => mask.style.width = slider.value + '%';
+    mask.style.width = slider.value + '%';
 
-    // no scrolling
-    window.onload=window.onresize=_=>window.scrollTo(0,0);
+    // 4) block any scrolling
+    window.onload = window.onresize = () => window.scrollTo(0,0);
   </script>
 </body>
 </html>
